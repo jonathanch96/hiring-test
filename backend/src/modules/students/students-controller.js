@@ -2,7 +2,8 @@ const asyncHandler = require("express-async-handler");
 const { getAllStudents, addNewStudent, getStudentDetail, setStudentStatus, updateStudent } = require("./students-service");
 
 const handleGetAllStudents = asyncHandler(async (req, res) => {
-    const { name, className, section, roll } = req.query;
+    const { name = "", className = "", section = "", roll = ""
+    } = req.query;
     const students = await getAllStudents(name, className, section, roll);
     res.json({ students });
 
@@ -29,10 +30,10 @@ const handleGetStudentDetail = asyncHandler(async (req, res) => {
 });
 
 const handleStudentStatus = asyncHandler(async (req, res) => {
-    const { id: noticeId } = req.params;
-    const { status } = req.body;
-    const payload = { noticeId, status, currentUserId, currentUserRole };
-    const message = await setStudentStatus(payload);
+    const payload = req.body;
+    const { id: userId } = req.params;
+    const { id: reviewerId } = req.user;
+    const message = await setStudentStatus({ ...payload, userId, reviewerId });
     res.json(message);
 
 });
