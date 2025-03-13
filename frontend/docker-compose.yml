@@ -4,25 +4,5 @@ services:
   frontend:
     build: .
     ports:
-      - "5173:5173"
-    environment:
-      - NODE_OPTIONS=--max-old-space-size=4096
-    restart: unless-stopped
-
-  caddy:
-    image: caddy:2.8.4-alpine
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - frontend
-    restart: unless-stopped
-
-volumes:
-  caddy_data:
-  caddy_config:
-
+      - "3000:80"
+    restart: always

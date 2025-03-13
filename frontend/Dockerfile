@@ -1,36 +1,35 @@
-# Use an official Node.js image as the base image for building
+# Use a Node.js image to build the frontend
 FROM node:20-alpine AS builder
 
-# Set working directory
+# Set the working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json to leverage Docker cache
-COPY package.json package-lock.json ./
+# Copy package.json and package-lock.json (or yarn.lock)
+COPY package*.json ./
 
 # Install dependencies
-RUN npm install --frozen-lockfile
+RUN npm install
 
-# Copy the rest of the application files
+# Copy the entire project
 COPY . .
 
-# Build the application
+# Build the project
 RUN npm run build
 
-# Use Caddy as the web server
-FROM caddy:2.8.4-alpine
+# Use Nginx for serving the frontend in production
+FROM nginx:alpine
 
-# Set working directory
-WORKDIR /srv
+# Remove default Nginx static files
+RUN rm -rf /usr/share/nginx/html/*
 
-# Copy the built frontend files from the builder stage
-COPY --from=builder /app/dist /srv
+# Copy built files from the previous stage
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy Caddyfile configuration
-COPY Caddyfile /etc/caddy/Caddyfile
+# Copy custom Nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port 80
 EXPOSE 80
 
-# Start Caddy
-CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
-
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"]
